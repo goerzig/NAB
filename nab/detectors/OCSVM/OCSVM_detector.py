@@ -27,34 +27,38 @@ from nab.detectors.base import AnomalyDetector
 from sklearn import svm
 from sklearn.svm import OneClassSVM as ocsvm
 import numpy as np
-
+import math
 
 class OCSVMDetector(AnomalyDetector):
     def __init__(self, *args, **kwargs):
         super(OCSVMDetector, self).__init__(*args, **kwargs)
 
-        self.trainDataSet = np.zeros((100, 10))
-        self.dataStream = np.zeros((1, 10))
+        self.trainDataSet = np.zeros((100, 10)) # (train size)
+        self.dataStream = np.zeros((1, 10)) # (batch size)
         self.full = False
-        self.count = 0
-        self.clf = svm.OneClassSVM(kernel="rbf")
+        self.count = -9 # -(batch size-1)
+        self.clf = svm.OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
         self.train = -1
 
     def handleRecord(self, inputData):
-        """The anomaly score is simply a constant 0.5."""
         # scikit-learn
         anomalyScore = 0
 
         self.dataStream = np.append(self.dataStream[:,1:], inputData["value"]).reshape((1, 10))
 
-        if self.count > 108:
-            self.train = (self.train + 1) % 9
+        if self.count >= 100: # start training after trainDataSet is filled
+
+            self.train = (self.train + 1) % 9 # train every 10 datapoints
             if self.train == 0:
                 self.clf.fit(self.trainDataSet)
 
-            anomalyScore = -1*self.clf.decision_function(self.dataStream)[0]
+            anomalyScore = self.clf.decision_function(self.dataStream)[0]
+            anomalyScore = 1 / (1 + math.exp(-anomalyScore))
+
         self.trainDataSet = np.concatenate((self.trainDataSet[1:,:], self.dataStream), axis=0)
 
         self.count += 1
 
+        # if anomalyScore > 0.75: print(str(anomalyScore) + " " + str(inputData['timestamp']))
+        # print(anomalyScore)
         return (anomalyScore, )
