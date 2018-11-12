@@ -26,6 +26,7 @@ data points.
 from nab.detectors.base import AnomalyDetector
 #from sklearn import svm
 from sklearn.svm import OneClassSVM
+from skimage.util.shape import view_as_windows
 from sklearn import preprocessing
 import numpy as np
 import math
@@ -33,18 +34,20 @@ import math
 class OCSVMDetector(AnomalyDetector):
 
     TRAINSIZE = 1000
-    BATCHSIZE = 200
+    BATCHSIZE = 100
     TRAINFREQUENCY = 10
     MIN_TRAINSIZE = 50
-    ANOMALYMEMORY = 10000
+    ANOMALYMEMORY = 1000
     ANOMALYTRAINING = 1000
+    ANOMALYWINDOW = 10
 
     def __init__(self, *args, **kwargs):
         super(OCSVMDetector, self).__init__(*args, **kwargs)
 
-        self.trainDataSet = np.zeros((self.TRAINSIZE, self.BATCHSIZE)) # (train size)
-        self.dataStream = np.zeros((1, self.BATCHSIZE)) # (batch size)
+        self.dataStream = np.zeros((self.BATCHSIZE + self.TRAINSIZE))
+        self.trainDataSet = None
         self.clf = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
+        self.clfAS = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
         self.scaler = preprocessing.StandardScaler()
         self.scores = None
         self.train = 0
@@ -55,43 +58,41 @@ class OCSVMDetector(AnomalyDetector):
 
         anomalyScore = 0
 
-        self.dataStream = np.append(self.dataStream[:,1:], inputData["value"]).reshape((1, self.BATCHSIZE))
+        self.dataStream = np.append(self.dataStream2[1:], inputData["value"])
 
-        if self.start != 0:
+        if not self.start:
             if (self.BATCHSIZE - self.count) + self.MIN_TRAINSIZE < 0:
-                if self.count < (self.TRAINSIZE+self.BATCHSIZE):
-                    self.start = (self.TRAINSIZE+self.BATCHSIZE-self.count)
-                else:
-                    self.start = 0
-            else:
-                self.start = None
+                self.start = True
 
         if self.start != None:
 
-            filledTrainDataSet = self.trainDataSet[self.start:]
             if self.train == 0:
-                self.clf.fit(self.normDataMinMax(filledTrainDataSet, by=filledTrainDataSet))
+                self.trainDataSet = view_as_windows(self.dataStream[-(self.count+1):-1][:], (self.BATCHSIZE,))
+                self.clf.fit(self.normDataMinMax(self.trainDataSet, by=self.trainDataSet))
                 #self.clf.fit(preprocessing.scale(self.scaler.fit_transform(filledTrainDataSet)))
 
             self.train = (self.train + 1) % (self.TRAINFREQUENCY-1)
 
-            anomalyScore = -self.clf.decision_function(self.normDataMinMax(self.dataStream, by=filledTrainDataSet))[0]
+            currData = self.dataStream[-self.BATCHSIZE:].reshape(1, self.BATCHSIZE)
+            anomalyScore = -self.clf.decision_function(self.normDataMinMax(currData, by=self.trainDataSet))[0]
             #anomalyScore = -self.clf.decision_function(self.scaler.transform(self.dataStream))[0]
-            if anomalyScore < 0: anomalyScore = 0
+            #if anomalyScore < 0: anomalyScore = 0
             if self.scores is None:
-                self.scores = np.array([anomalyScore])
-                anomalyScore = 1
+                self.scores = np.array([[anomalyScore, 0]])
+                anomalyScore = 0
             else:
                 '''if self.count - self.ANOMALYTRAINING < 0:
                     self.scores = np.append(self.scores, [anomalyScore])
                 elif self.count - self.ANOMALYTRAINING == 0:
                     self.scores = np.append(self.scores, [2*self.scores.max()])
                 '''
+                '''
                 self.scores = np.append(self.scores, [anomalyScore])
                 diff = (self.scores.max() - np.mean(self.scores))
                 diff = diff if diff != 0 else 1
                 anomalyScore = (anomalyScore - np.mean(self.scores)) / diff
                 if anomalyScore < 0: anomalyScore = 0
+                '''
                 '''
                 if newAnomalyScore > 1:
                     self.scores = np.append(self.scores, [anomalyScore])
@@ -100,7 +101,16 @@ class OCSVMDetector(AnomalyDetector):
                 #anomalyScore = anomalyScore / self.scores[self.count-self.ANOMALYMEMORY:].max()
                 #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
 
-        self.trainDataSet = np.concatenate((self.trainDataSet[1:,:], self.dataStream), axis=0)
+                self.scores = np.append(self.scores, [anomalyScore])
+                if self.scores.shape[0] > self.ANOMALYWINDOW:
+                    self.clfAS.fit(view_as_windows(self.scores[-(self.ANOMALYMEMORY+1):-1], window_shape=(self.ANOMALYWINDOW,)))
+                    anomalyScore = -self.clfAS.decision_function(self.scores[-self.ANOMALYWINDOW:].reshape(1, self.ANOMALYWINDOW))
+                    anomalyScore = anomalyScore[0]
+                    #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
+                    #if anomalyScore < 0: anomalyScore = 0
+
+            #anomalyScore *= 100
+            #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
 
         self.count += 1
 

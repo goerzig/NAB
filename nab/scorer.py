@@ -288,7 +288,7 @@ def scaledSigmoid(relativePositionInWindow):
     return 2*sigmoid(-5*relativePositionInWindow) - 1.0
 
 
-def scoreCorpus(threshold, args):
+def scoreCorpus(threshold, args, dataFiles=None):
   """Scores the corpus given a detector's results and a user profile.
 
   Scores the corpus in parallel.
@@ -331,6 +331,8 @@ def scoreCorpus(threshold, args):
   args = []
   for relativePath, dataSet in resultsCorpus.dataFiles.iteritems():
     if "_scores.csv" in relativePath:
+      continue
+    if dataFiles and relativePath not in dataFiles:
       continue
 
     # relativePath: raw dataset file,

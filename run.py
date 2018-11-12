@@ -54,12 +54,14 @@ def main(args):
   resultsDir = os.path.join(root, args.resultsDir)
   profilesFile = os.path.join(root, args.profilesFile)
   thresholdsFile = os.path.join(root, args.thresholdsFile)
+  dataFiles = os.path.join(root, args.dataFiles) if args.dataFiles else None
 
   runner = Runner(dataDir=dataDir,
                   labelPath=windowsFile,
                   resultsDir=resultsDir,
                   profilesPath=profilesFile,
                   thresholdPath=thresholdsFile,
+                  dataFiles=dataFiles,
                   numCPUs=numCPUs)
 
   runner.initialize()
@@ -153,6 +155,10 @@ if __name__ == "__main__":
                     help="The number of CPUs to use to run the "
                     "benchmark. If not specified all CPUs will be used.")
 
+  parser.add_argument("-dF", "--dataFiles",
+                    default=None,
+                    help="This holdes selected data file names to run the algorithm on.")
+
   args = parser.parse_args()
 
   if (not args.detect
@@ -163,6 +169,10 @@ if __name__ == "__main__":
     args.optimize = True
     args.score = True
     args.normalize = True
+
+  if args.dataFiles and len(args.dataFiles) == 1:
+    # Handle comma-seperated list argument.
+    args.dataFiles = args.dataFiles[0].split(",")
 
   if len(args.detectors) == 1:
     # Handle comma-seperated list argument.

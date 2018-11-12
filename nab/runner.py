@@ -47,6 +47,7 @@ class Runner(object):
                labelPath,
                profilesPath,
                thresholdPath,
+               dataFiles,
                numCPUs=None):
     """
     @param dataDir        (string)  Directory where all the raw datasets exist.
@@ -85,6 +86,8 @@ class Runner(object):
     self.corpus = None
     self.corpusLabel = None
     self.profiles = None
+
+    self.dataFiles = dataFiles
 
 
   def initialize(self):
@@ -209,7 +212,8 @@ class Runner(object):
                                  resultsCorpus,
                                  self.corpusLabel,
                                  self.probationaryPercent,
-                                 scoreFlag))
+                                 scoreFlag),
+                                 self.dataFiles)
 
         scorePath = os.path.join(resultsDetectorDir, "%s_%s_scores.csv" %\
           (detectorName, profileName))
@@ -285,4 +289,3 @@ class Runner(object):
     resultsPath = os.path.join(self.resultsDir, "final_results.json")
     updateFinalResults(finalResults, resultsPath)
     print "Final scores have been written to %s." % resultsPath
-

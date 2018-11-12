@@ -1,16 +1,16 @@
 {
     "OCSVM": {
         "reward_low_FN_rate": {
-            "score": -226.2290749156541,
-            "threshold": 0.8554626464843756
+            "score": -133.3911441409328,
+            "threshold": 0.50625
         },
         "reward_low_FP_rate": {
-            "score": -112.22907491565408,
-            "threshold": 0.8554626464843756
+            "score": -98.5720435613017,
+            "threshold": 0.50625
         },
         "standard": {
-            "score": -112.22907491565408,
-            "threshold": 0.8554626464843756
+            "score": -65.39114414093282,
+            "threshold": 0.50625
         }
     },
     "bayesChangePt": {
@@ -29,16 +29,16 @@
     },
     "contextOSE": {
         "reward_low_FN_rate": {
-            "score": 22.67222031445549,
-            "threshold": 0.7047851562500003
+            "score": 1.7231016041511955,
+            "threshold": 0.5
         },
         "reward_low_FP_rate": {
-            "score": 39.38696292192149,
-            "threshold": 0.7656372070312502
+            "score": 1.7231016041511955,
+            "threshold": 0.5
         },
         "standard": {
-            "score": 46.167000006791156,
-            "threshold": 0.7655273437500002
+            "score": 1.7231016041511955,
+            "threshold": 0.5
         }
     },
     "expose": {
@@ -85,30 +85,30 @@
     },
     "null": {
         "reward_low_FN_rate": {
-            "score": -232.0,
+            "score": -8.0,
             "threshold": 0.6250000000000001
         },
         "reward_low_FP_rate": {
-            "score": -116.0,
+            "score": -4.0,
             "threshold": 0.6250000000000001
         },
         "standard": {
-            "score": -116.0,
+            "score": -4.0,
             "threshold": 0.6250000000000001
         }
     },
     "numenta": {
         "reward_low_FN_rate": {
-            "score": 26.634450197137568,
-            "threshold": 0.5421876907348634
+            "score": 2.7207577987206513,
+            "threshold": 0.5126953125
         },
         "reward_low_FP_rate": {
-            "score": 30.431072517124093,
-            "threshold": 0.5751955032348636
+            "score": 2.0607608562993995,
+            "threshold": 0.5126953125
         },
         "standard": {
-            "score": 46.634450197137596,
-            "threshold": 0.5421876907348634
+            "score": 2.7207577987206513,
+            "threshold": 0.5126953125
         }
     },
     "numentaTM": {

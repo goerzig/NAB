@@ -1,8 +1,8 @@
 {
     "OCSVM": {
-        "reward_low_FN_rate": 1.6583118058465203,
-        "reward_low_FP_rate": 1.6253987432525512,
-        "standard": 1.6253987432525512
+        "reward_low_FN_rate": 7.471684635395436,
+        "reward_low_FP_rate": 5.854078677231072,
+        "standard": 6.897182125506928
     },
     "contextOSE": {
         "reward_low_FN_rate": 73.18167250416667,
