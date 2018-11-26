@@ -54,7 +54,7 @@ def main(args):
   resultsDir = os.path.join(root, args.resultsDir)
   profilesFile = os.path.join(root, args.profilesFile)
   thresholdsFile = os.path.join(root, args.thresholdsFile)
-  dataFiles = os.path.join(root, args.dataFiles) if args.dataFiles else None
+  dataFiles = args.dataFiles if args.dataFiles else None
 
   runner = Runner(dataDir=dataDir,
                   labelPath=windowsFile,
@@ -170,9 +170,9 @@ if __name__ == "__main__":
     args.score = True
     args.normalize = True
 
-  if args.dataFiles and len(args.dataFiles) == 1:
+  if args.dataFiles and len(args.dataFiles) >= 1:
     # Handle comma-seperated list argument.
-    args.dataFiles = args.dataFiles[0].split(",")
+    args.dataFiles = args.dataFiles.split(",")
 
   if len(args.detectors) == 1:
     # Handle comma-seperated list argument.

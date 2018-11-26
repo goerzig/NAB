@@ -22,7 +22,7 @@ from nab.scorer import scoreCorpus
 
 
 
-def optimizeThreshold(args):
+def optimizeThreshold(args, dataFiles):
   """Optimize the threshold for a given combination of detector and profile.
 
   @param args       (tuple)   Arguments necessary for the objective function.
@@ -40,6 +40,7 @@ def optimizeThreshold(args):
   optimizedThreshold, optimizedScore = twiddle(
     objFunction=objectiveFunction,
     args=args,
+    dataFiles=dataFiles,
     initialGuess=0.5,
     tolerance=.0000001)
 
@@ -52,7 +53,7 @@ def optimizeThreshold(args):
   }
 
 
-def twiddle(objFunction, args, initialGuess=0.5, tolerance=0.00001,
+def twiddle(objFunction, args, dataFiles, initialGuess=0.5, tolerance=0.00001,
             domain=(float("-inf"), float("inf"))):
   """Optimize a single parameter given an objective function.
 
@@ -79,7 +80,7 @@ def twiddle(objFunction, args, initialGuess=0.5, tolerance=0.00001,
   pastCalls = {}
   x = initialGuess
   delta = 0.1
-  bestScore = objFunction(x, args)
+  bestScore = objFunction(x, args, dataFiles)
 
   pastCalls[x] = bestScore
 
@@ -91,7 +92,7 @@ def twiddle(objFunction, args, initialGuess=0.5, tolerance=0.00001,
     x += delta
 
     if x not in pastCalls:
-      score = objFunction(x, args)
+      score = objFunction(x, args, dataFiles)
       pastCalls[x] = score
 
     score = pastCalls[x]
@@ -107,7 +108,7 @@ def twiddle(objFunction, args, initialGuess=0.5, tolerance=0.00001,
       x -= 2*delta
 
       if x not in pastCalls:
-        score = objFunction(x, args)
+        score = objFunction(x, args, dataFiles)
         pastCalls[x] = score
 
       score = pastCalls[x]
@@ -132,7 +133,7 @@ def twiddle(objFunction, args, initialGuess=0.5, tolerance=0.00001,
   return (bestParam, pastCalls[bestParam])
 
 
-def objectiveFunction(threshold, args):
+def objectiveFunction(threshold, args, dataFiles=None):
   """Objective function that scores the corpus given a specific threshold.
 
   @param threshold  (float)   Threshold value to convert an anomaly score value
@@ -145,7 +146,7 @@ def objectiveFunction(threshold, args):
   if not 0 <= threshold <= 1:
     return float("-inf")
 
-  resultsDF = scoreCorpus(threshold, args)
+  resultsDF = scoreCorpus(threshold, args, dataFiles)
   score = float(resultsDF["Score"].iloc[-1])
 
   return score

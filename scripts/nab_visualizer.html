@@ -85,25 +85,32 @@ function render(path) {
           createDiv(graphDiv, count++),
           path,
           {
-            visibility: [true, true, true, false, true],
             series: {
               timestamp: {
                 axis: "x1"
               },
               value: {
-                axis: "y1"
+                axis: "y1",
+                color: "green"
               },
               label: {
-                axis: "y2"
+                axis: "y2",
+                color: "red"
               },
               anomaly_score: {
-                axis: "y2"
+                axis: "y2",
+                color: "blue"
               },
-              _raw_score: {
+              raw_score: {
                 axis: "y2"
-              },
-              _alerts: {
-                axis: "y2"
+                //visibility: false
+              }
+            },
+            colors: ["#317eb8", "purple", "yellow", "red"],
+            //visibility: [true, true, true, true],
+            axes: {
+              y2: {
+                valueRange: [0,1.1]
               }
             },
             legend: "always",

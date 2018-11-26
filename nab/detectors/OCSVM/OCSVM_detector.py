@@ -37,9 +37,9 @@ class OCSVMDetector(AnomalyDetector):
     BATCHSIZE = 100
     TRAINFREQUENCY = 10
     MIN_TRAINSIZE = 50
-    ANOMALYMEMORY = 1000
+    ANOMALYMEMORY = 10000
     ANOMALYTRAINING = 1000
-    ANOMALYWINDOW = 10
+    ANOMALYWINDOW = 100
 
     def __init__(self, *args, **kwargs):
         super(OCSVMDetector, self).__init__(*args, **kwargs)
@@ -54,11 +54,16 @@ class OCSVMDetector(AnomalyDetector):
         self.count = 0
         self.start = None
 
+    def getAdditionalHeaders(self):
+        """Returns a list of strings."""
+        return ["raw_score"]
+
     def handleRecord(self, inputData):
 
         anomalyScore = 0
+        raw_anomalyScore = 0
 
-        self.dataStream = np.append(self.dataStream2[1:], inputData["value"])
+        self.dataStream = np.append(self.dataStream[1:], inputData["value"])
 
         if not self.start:
             if (self.BATCHSIZE - self.count) + self.MIN_TRAINSIZE < 0:
@@ -74,11 +79,11 @@ class OCSVMDetector(AnomalyDetector):
             self.train = (self.train + 1) % (self.TRAINFREQUENCY-1)
 
             currData = self.dataStream[-self.BATCHSIZE:].reshape(1, self.BATCHSIZE)
-            anomalyScore = -self.clf.decision_function(self.normDataMinMax(currData, by=self.trainDataSet))[0]
+            raw_anomalyScore = -self.clf.decision_function(self.normDataMinMax(currData, by=self.trainDataSet))[0]
             #anomalyScore = -self.clf.decision_function(self.scaler.transform(self.dataStream))[0]
-            #if anomalyScore < 0: anomalyScore = 0
+            if anomalyScore < 0: anomalyScore = 0
             if self.scores is None:
-                self.scores = np.array([[anomalyScore, 0]])
+                self.scores = np.array([raw_anomalyScore])
                 anomalyScore = 0
             else:
                 '''if self.count - self.ANOMALYTRAINING < 0:
@@ -100,21 +105,50 @@ class OCSVMDetector(AnomalyDetector):
                 '''
                 #anomalyScore = anomalyScore / self.scores[self.count-self.ANOMALYMEMORY:].max()
                 #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
+                #if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
+                w = np.exp(np.arange(self.ANOMALYMEMORY)/(self.ANOMALYMEMORY/100)) #e^(x/10)
+                selected_w = w[-min(self.scores.size, self.ANOMALYMEMORY):]
+                norm_w = selected_w/selected_w.sum()
+                selected_scores = self.scores[-min(self.count, self.ANOMALYMEMORY):]
+                selected_scores[selected_scores < 0] = 0
 
-                self.scores = np.append(self.scores, [anomalyScore])
+                #selected_scores_sum = selected_scores.sum()
+                #selected_scores_sum = selected_scores_sum if selected_scores_sum != 0 else 1
+                #norm_scores = selected_scores/selected_scores_sum
+                norm_scores = self.normDataMinMax(selected_scores, selected_scores)
+                norm_score = self.normDataMinMax(raw_anomalyScore, np.append(selected_scores, raw_anomalyScore))
+                #selected_scores_max = selected_scores.max()
+                #selected_scores_max = selected_scores_max if selected_scores_max > anomalyScore else anomalyScore
+                #selected_scores_max = selected_scores_max if selected_scores_max != 0 else 1
+                #norm_score = raw_anomalyScore/selected_scores_max
+
+                #norm_score = norm_scores[-1]
+
+                exp_scores = norm_scores * norm_w
+                if np.sum(exp_scores) > 1: print("np.sum(exp_scores): " + str(np.sum(exp_scores)))
+                if norm_score > 1: print("norm_score: " + str(norm_score))
+                #exp_scores = self.scores[-min(self.count, self.ANOMALYMEMORY):] * w[-min(self.scores.size, self.ANOMALYMEMORY):]
+                self.scores = np.append(self.scores, [raw_anomalyScore])
+                anomalyScore = norm_score - np.sum(exp_scores)
+                #if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
+                #print(self.normDataMinMax([anomalyScore], self.scores[-(min(self.count, self.ANOMALYMEMORY)-1):]-np.sum(exp_scores)))
+                #anomalyScore = self.normDataMinMax([anomalyScore], self.scores[-(min(self.count, self.ANOMALYMEMORY)-1):]-np.sum(exp_scores))[0]
+                #if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
+                '''
                 if self.scores.shape[0] > self.ANOMALYWINDOW:
                     self.clfAS.fit(view_as_windows(self.scores[-(self.ANOMALYMEMORY+1):-1], window_shape=(self.ANOMALYWINDOW,)))
                     anomalyScore = -self.clfAS.decision_function(self.scores[-self.ANOMALYWINDOW:].reshape(1, self.ANOMALYWINDOW))
                     anomalyScore = anomalyScore[0]
                     #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
                     #if anomalyScore < 0: anomalyScore = 0
-
+                '''
             #anomalyScore *= 100
             #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
-
+            #if anomalyScore < 0: anomalyScore = 0
+        ##if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
         self.count += 1
 
-        return (anomalyScore, )
+        return (anomalyScore, raw_anomalyScore*100)
 
     def normDataMinMax(self, matrix, by):
 

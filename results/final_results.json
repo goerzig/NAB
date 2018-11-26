@@ -1,8 +1,8 @@
 {
     "OCSVM": {
-        "reward_low_FN_rate": 7.471684635395436,
-        "reward_low_FP_rate": 5.854078677231072,
-        "standard": 6.897182125506928
+        "reward_low_FN_rate": 29.148004778890282,
+        "reward_low_FP_rate": 22.801877816604403,
+        "standard": 25.583574165543276
     },
     "contextOSE": {
         "reward_low_FN_rate": 73.18167250416667,
@@ -30,9 +30,9 @@
         "standard": 0.0
     },
     "numenta": {
-        "reward_low_FN_rate": 74.3202443095115,
-        "reward_low_FP_rate": 63.11684160219828,
-        "standard": 70.10105611943965
+        "reward_low_FN_rate": 2.4242981561607646,
+        "reward_low_FP_rate": 1.590317798521113,
+        "standard": 1.590317798521113
     },
     "numentaTM": {
         "reward_low_FN_rate": 69.18506822906035,

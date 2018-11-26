@@ -168,7 +168,8 @@ class Runner(object):
            resultsCorpus,
            self.corpusLabel,
            self.probationaryPercent,
-           scoreFlag))
+           scoreFlag),
+           self.dataFiles)
 
     updateThresholds(thresholds, self.thresholdPath)
 
