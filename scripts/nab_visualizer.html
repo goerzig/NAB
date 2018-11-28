@@ -104,9 +104,18 @@ function render(path) {
               raw_score: {
                 axis: "y2"
                 //visibility: false
+              },
+              norm_raw_score: {
+                axis: "y2"
+                //visibility: false
+              },
+              exp_scores_sum: {
+                axis: "y2"
+                //visibility: false
               }
             },
-            colors: ["#317eb8", "purple", "yellow", "red"],
+            colors: ["#317eb8", "purple", "yellow", "green", "blue", "red"],
+            visibility: [true, true, false, false, false, true],
             //visibility: [true, true, true, true],
             axes: {
               y2: {
