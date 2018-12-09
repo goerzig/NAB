@@ -112,10 +112,19 @@ function render(path) {
               exp_scores_sum: {
                 axis: "y2"
                 //visibility: false
+              },
+              anomaly_min: {
+                axis: "y2"
+                //visibility: false
+              },
+              anomaly_max: {
+                axis: "y2"
+                //visibility: false
               }
             },
-            colors: ["#317eb8", "purple", "yellow", "green", "blue", "red"],
-            visibility: [true, true, false, false, false, true],
+            colors: ["#317eb8", "purple", "yellow", "green", "blue", "black", "black", "red"],
+            //visibility: [true, true, true, true, false, true, true, true, false, false, false],
+            visibility: [true, true, false, false, false, false, false, true, false, false, false],
             //visibility: [true, true, true, true],
             axes: {
               y2: {
