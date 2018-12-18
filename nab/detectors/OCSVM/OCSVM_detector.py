@@ -33,7 +33,7 @@ import math
 class OCSVMDetector(AnomalyDetector):
 
     TRAINSIZE = 1000
-    BATCHSIZE = 100
+    BATCHSIZE = 50
     TRAINFREQUENCY = 10
     MIN_TRAINSIZE = 50
     ANOMALYMEMORY = 1000
@@ -86,7 +86,6 @@ class OCSVMDetector(AnomalyDetector):
             self.train = (self.train + 1) % (self.TRAINFREQUENCY-1)
 
             currData = self.dataStream[-self.BATCHSIZE:].reshape(1, self.BATCHSIZE)
-            #raw_anomalyScore = -self.clf.decision_function(self.normMinMax(currData, by=self.trainDataSet))[0]
             raw_anomalyScore = -self.clf.decision_function(self.normDataMinMax(currData))[0]
             #raw_anomalyScore = np.abs(self.clf.decision_function(self.normMinMax(currData, by=self.trainDataSet))[0])
             #if raw_anomalyScore < 0: raw_anomalyScore = 0
@@ -98,59 +97,22 @@ class OCSVMDetector(AnomalyDetector):
                 self.scores = np.array([raw_anomalyScore])
                 anomalyScore = 0
             else:
-                '''if self.count - self.ANOMALYTRAINING < 0:
-                    self.scores = np.append(self.scores, [anomalyScore])
-                elif self.count - self.ANOMALYTRAINING == 0:
-                    self.scores = np.append(self.scores, [2*self.scores.max()])
-                '''
-                '''
-                self.scores = np.append(self.scores, [anomalyScore])
-                diff = (self.scores.max() - np.mean(self.scores))
-                diff = diff if diff != 0 else 1
-                anomalyScore = (anomalyScore - np.mean(self.scores)) / diff
-                if anomalyScore < 0: anomalyScore = 0
-                '''
-                '''
-                if newAnomalyScore > 1:
-                    self.scores = np.append(self.scores, [anomalyScore])
-                    newAnomalyScore = 1
-                '''
-                #anomalyScore = anomalyScore / self.scores[self.count-self.ANOMALYMEMORY:].max()
-                #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
-                #if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
-
-                '''w'''
+                '''w:'''
                 w = np.exp(np.arange(self.ANOMALYMEMORY)/(self.ANOMALYMEMORY/100)) #e^(x/10)
+                #w = np.power(np.ones(self.ANOMALYMEMORY)*10, np.arange(self.ANOMALYMEMORY)/self.ANOMALYMEMORY*44)
                 window = -min(self.scores.size, self.ANOMALYMEMORY)
                 selected_w = w[window:]
                 norm_w = selected_w/selected_w.sum()
+                ''':w'''
+
                 selected_scores = self.scores[window:]
                 selected_scores[selected_scores < 0] = 0
-
-                #norm_scores = self.normMinMax(selected_scores, selected_scores)
-                #norm_scores = self.normMinMax(selected_scores, np.append(selected_scores, raw_anomalyScore))
-                #norm_score = self.normMinMax(raw_anomalyScore, np.append(selected_scores, raw_anomalyScore))
-                #norm_score = self.normMinMax(raw_anomalyScore/2, selected_scores)
                 norm_scores = self.normAnomMinMax(selected_scores)
 
                 exp_scores = norm_scores * norm_w
-                #exp_scores = selected_scores * norm_w
                 exp_scores_sum = np.sum(exp_scores)
                 self.scores = np.append(self.scores, [raw_anomalyScore])
                 anomalyScore = norm_score - exp_scores_sum
-                #anomalyScore = raw_anomalyScore - exp_scores_sum
-                '''
-                if self.scores.shape[0] > self.ANOMALYWINDOW:
-                    self.clfAS.fit(view_as_windows(self.scores[-(self.ANOMALYMEMORY+1):-1], window_shape=(self.ANOMALYWINDOW,)))
-                    anomalyScore = -self.clfAS.decision_function(self.scores[-self.ANOMALYWINDOW:].reshape(1, self.ANOMALYWINDOW))
-                    anomalyScore = anomalyScore[0]
-                    #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
-                    #if anomalyScore < 0: anomalyScore = 0
-                '''
-            #anomalyScore *= 100
-            #anomalyScore = 2 / (1 + math.exp(-2*anomalyScore)) - 1
-            #if anomalyScore < 0: anomalyScore = 0
-        ##if anomalyScore > 0: print(str(self.count) + " " + str(anomalyScore))
         self.count += 1
 
         return (anomalyScore, raw_anomalyScore, norm_score, exp_scores_sum, self.anomMin, self.anomMax)
