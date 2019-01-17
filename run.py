@@ -206,6 +206,10 @@ if __name__ == "__main__":
       RelativeEntropyDetector)
   if "OCSVM" in args.detectors:
     from nab.detectors.OCSVM.OCSVM_detector import OCSVMDetector
+  if "numentaWithoutSpatial" in args.detectors:
+    from nab.detectors.spatial.numenta_without_spatial_detector import NumentaWithoutSpatialDetector
+  if "spatial" in args.detectors:
+    from nab.detectors.spatial.spatial_detector import SpatialDetector
 
   # To run expose detector, you must have sklearn version 0.16.1 installed.
   # Higher versions of sklearn may not be compatible with numpy version 1.9.2

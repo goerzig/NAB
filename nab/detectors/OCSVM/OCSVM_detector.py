@@ -30,9 +30,11 @@ from skimage.util.shape import view_as_windows
 import numpy as np
 import math
 
+SPATIAL_TOLERANCE = 0.05
+
 class OCSVMDetector(AnomalyDetector):
 
-    TRAINSIZE = 1000
+    TRAINSIZE = 500
     BATCHSIZE = 50
     TRAINFREQUENCY = 10
     MIN_TRAINSIZE = 50
@@ -56,6 +58,9 @@ class OCSVMDetector(AnomalyDetector):
         self.anomMin = None
         self.anomMax = None
 
+        self.minVal = None
+        self.maxVal = None
+
     def getAdditionalHeaders(self):
         """Returns a list of strings."""
         return ["raw_score", "norm_raw_score", "exp_scores_sum", "anomaly_min", "anomaly_max"]
@@ -68,6 +73,8 @@ class OCSVMDetector(AnomalyDetector):
         exp_scores_sum = 0
 
         value = inputData["value"]
+
+        spatialAnomaly = self.spatial(value)
 
         self.dataStream = np.append(self.dataStream[1:], value)
         self.calcMinMax("data", value)
@@ -115,7 +122,27 @@ class OCSVMDetector(AnomalyDetector):
                 anomalyScore = norm_score - exp_scores_sum
         self.count += 1
 
+        if spatialAnomaly:
+          anomalyScore = 1.0
+
         return (anomalyScore, raw_anomalyScore, norm_score, exp_scores_sum, self.anomMin, self.anomMax)
+
+    def spatial(self, value):
+
+        # Update min/max values and check if there is a spatial anomaly
+        spatialAnomaly = False
+        if self.minVal != self.maxVal:
+          tolerance = (self.maxVal - self.minVal) * SPATIAL_TOLERANCE
+          maxExpected = self.maxVal + tolerance
+          minExpected = self.minVal - tolerance
+          if value > maxExpected or value < minExpected:
+            spatialAnomaly = True
+        if self.maxVal is None or value > self.maxVal:
+          self.maxVal = value
+        if self.minVal is None or value < self.minVal:
+          self.minVal = value
+
+        return spatialAnomaly
 
     def normMinMax(self, matrix, by):
 

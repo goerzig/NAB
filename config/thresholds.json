@@ -1,16 +1,16 @@
 {
     "OCSVM": {
         "reward_low_FN_rate": {
-            "score": -78.84690937151497,
-            "threshold": 0.28945312500000014
+            "score": -31.97332819464799,
+            "threshold": 0.3882781982421876
         },
         "reward_low_FP_rate": {
-            "score": -47.4344421359585,
-            "threshold": 0.4046905517578125
+            "score": 4.5212997573195945,
+            "threshold": 0.6539062500000002
         },
         "standard": {
-            "score": -26.846909371514993,
-            "threshold": 0.28942871093750017
+            "score": 8.831920073162518,
+            "threshold": 0.654687309265137
         }
     },
     "bayesChangePt": {
@@ -99,16 +99,16 @@
     },
     "numenta": {
         "reward_low_FN_rate": {
-            "score": 0.8606718242697022,
-            "threshold": 0.5
+            "score": 26.63585249479599,
+            "threshold": 0.5126953125
         },
         "reward_low_FP_rate": {
-            "score": 0.8606718242697022,
-            "threshold": 0.5
+            "score": 27.16284064423633,
+            "threshold": 0.5125976562500002
         },
         "standard": {
-            "score": 0.8606718242697022,
-            "threshold": 0.5
+            "score": 45.635852494796,
+            "threshold": 0.5126953125
         }
     },
     "numentaTM": {
@@ -122,6 +122,20 @@
         },
         "standard": {
             "score": 33.76403743713426,
+            "threshold": 0.5126953125
+        }
+    },
+    "numentaWithoutSpatial": {
+        "reward_low_FN_rate": {
+            "score": -5.029784542183083,
+            "threshold": 0.4769535064697267
+        },
+        "reward_low_FP_rate": {
+            "score": 8.507035368309637,
+            "threshold": 0.5125976562500002
+        },
+        "standard": {
+            "score": 25.000495451997686,
             "threshold": 0.5126953125
         }
     },
@@ -179,6 +193,20 @@
         "standard": {
             "score": -33.206059646391715,
             "threshold": 0.8031250000000002
+        }
+    },
+    "spatial": {
+        "reward_low_FN_rate": {
+            "score": -49.07556009741859,
+            "threshold": 0.5
+        },
+        "reward_low_FP_rate": {
+            "score": -0.1255975131756042,
+            "threshold": 0.5
+        },
+        "standard": {
+            "score": 1.9244399025814127,
+            "threshold": 0.5
         }
     },
     "twitterADVec": {

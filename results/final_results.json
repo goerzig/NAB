@@ -1,8 +1,8 @@
 {
     "OCSVM": {
-        "reward_low_FN_rate": 44.0095088012888,
-        "reward_low_FP_rate": 29.5541197689834,
-        "standard": 38.42805630538147
+        "reward_low_FN_rate": 57.47892867969885,
+        "reward_low_FP_rate": 51.94883610229293,
+        "standard": 53.80686210050109
     },
     "contextOSE": {
         "reward_low_FN_rate": 73.18167250416667,
@@ -30,14 +30,19 @@
         "standard": 0.0
     },
     "numenta": {
-        "reward_low_FN_rate": 2.4242981561607646,
-        "reward_low_FP_rate": 1.590317798521113,
-        "standard": 1.590317798521113
+        "reward_low_FN_rate": 74.32064726861954,
+        "reward_low_FP_rate": 61.70812096734325,
+        "standard": 69.6706260753431
     },
     "numentaTM": {
         "reward_low_FN_rate": 69.18506822906035,
         "reward_low_FP_rate": 56.665308225043105,
         "standard": 64.55346441254311
+    },
+    "numentaWithoutSpatial": {
+        "reward_low_FN_rate": 65.22132628098187,
+        "reward_low_FP_rate": 53.66682558978863,
+        "standard": 60.77607562586107
     },
     "random": {
         "reward_low_FN_rate": 25.876351314080456,
@@ -58,6 +63,11 @@
         "reward_low_FN_rate": 44.4810173429885,
         "reward_low_FP_rate": 27.08121005969828,
         "standard": 35.687043255862065
+    },
+    "spatial": {
+        "reward_low_FN_rate": 52.56449422487971,
+        "reward_low_FP_rate": 49.94586314087259,
+        "standard": 50.82949995800923
     },
     "twitterADVec": {
         "reward_low_FN_rate": 53.50107495100574,
