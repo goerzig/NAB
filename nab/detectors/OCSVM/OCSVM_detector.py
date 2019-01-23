@@ -34,21 +34,22 @@ SPATIAL_TOLERANCE = 0.05
 
 class OCSVMDetector(AnomalyDetector):
 
-    TRAINSIZE = 500
+    TRAINSIZE = 1000
     BATCHSIZE = 50
     TRAINFREQUENCY = 10
     MIN_TRAINSIZE = 50
     ANOMALYMEMORY = 1000
     ANOMALYTRAINING = 1000
     ANOMALYWINDOW = 100
+    BOXSIZE = 4
 
     def __init__(self, *args, **kwargs):
         super(OCSVMDetector, self).__init__(*args, **kwargs)
 
         self.dataStream = np.zeros((self.BATCHSIZE + self.TRAINSIZE))
         self.trainDataSet = None
-        self.clf = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
-        self.clfAS = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
+        self.clf = OneClassSVM(nu=0.1, kernel="rbf", gamma=1)
+        #self.clfAS = OneClassSVM(nu=0.1, kernel="rbf", gamma=0.1)
         self.scores = None
         self.train = 0
         self.count = 0
@@ -61,9 +62,11 @@ class OCSVMDetector(AnomalyDetector):
         self.minVal = None
         self.maxVal = None
 
+        self.lastValue = 0
+
     def getAdditionalHeaders(self):
         """Returns a list of strings."""
-        return ["raw_score", "norm_raw_score", "exp_scores_sum", "anomaly_min", "anomaly_max"]
+        return ["raw_score", "norm_raw_score", "exp_scores_sum", "diff_value", "anomaly_min", "anomaly_max"]
 
     def handleRecord(self, inputData):
 
@@ -72,27 +75,39 @@ class OCSVMDetector(AnomalyDetector):
         norm_score = 0
         exp_scores_sum = 0
 
-        value = inputData["value"]
+        input_value = inputData["value"]
 
-        spatialAnomaly = self.spatial(value)
+        spatialAnomaly = self.spatial(input_value)
+
+        value = input_value
+        #value = np.abs(input_value - self.lastValue)
+        #self.lastValue = input_value
 
         self.dataStream = np.append(self.dataStream[1:], value)
         self.calcMinMax("data", value)
 
         if not self.start:
-            if (self.BATCHSIZE - self.count) + self.MIN_TRAINSIZE < 0:
+            if (self.BATCHSIZE*self.BOXSIZE - self.count) + self.MIN_TRAINSIZE < 0:
                 self.start = True
 
         elif self.start != None:
 
             if self.train == 0:
-                self.trainDataSet = view_as_windows(self.dataStream[-(self.count+1):-1][:], (self.BATCHSIZE,))
+                boxedDataSet = view_as_windows(self.dataStream[-(self.count+1):-1][:], (self.BOXSIZE,))
+                windowedDataSet = boxedDataSet.sum(axis=1)/4
+                self.trainDataSet = view_as_windows(windowedDataSet, (self.BATCHSIZE,))
+
+                #self.trainDataSet = view_as_windows(self.dataStream[-(self.count+1):-1][:], (self.BATCHSIZE,))
+
                 #self.clf.fit(self.normMinMax(self.trainDataSet, by=self.trainDataSet))
                 self.clf.fit(self.normDataMinMax(self.trainDataSet))
 
             self.train = (self.train + 1) % (self.TRAINFREQUENCY-1)
 
-            currData = self.dataStream[-self.BATCHSIZE:].reshape(1, self.BATCHSIZE)
+            boxedCurrData = view_as_windows(self.dataStream[-(self.BATCHSIZE+self.BOXSIZE-1):], (self.BOXSIZE,))
+            currData = (boxedCurrData.sum(axis=1)/4).reshape(1, self.BATCHSIZE)
+
+            #currData = self.dataStream[-self.BATCHSIZE:].reshape(1, self.BATCHSIZE)
             raw_anomalyScore = -self.clf.decision_function(self.normDataMinMax(currData))[0]
             #raw_anomalyScore = np.abs(self.clf.decision_function(self.normMinMax(currData, by=self.trainDataSet))[0])
             #if raw_anomalyScore < 0: raw_anomalyScore = 0
@@ -122,10 +137,9 @@ class OCSVMDetector(AnomalyDetector):
                 anomalyScore = norm_score - exp_scores_sum
         self.count += 1
 
-        if spatialAnomaly:
-          anomalyScore = 1.0
+        #if spatialAnomaly: anomalyScore = 1.0
 
-        return (anomalyScore, raw_anomalyScore, norm_score, exp_scores_sum, self.anomMin, self.anomMax)
+        return (anomalyScore, raw_anomalyScore, norm_score, exp_scores_sum, value, self.anomMin, self.anomMax)
 
     def spatial(self, value):
 

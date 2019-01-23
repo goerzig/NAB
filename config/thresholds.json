@@ -1,16 +1,16 @@
 {
     "OCSVM": {
         "reward_low_FN_rate": {
-            "score": -31.97332819464799,
-            "threshold": 0.3882781982421876
+            "score": -67.49857806630287,
+            "threshold": 0.3398468017578126
         },
         "reward_low_FP_rate": {
-            "score": 4.5212997573195945,
-            "threshold": 0.6539062500000002
+            "score": -40.665211193254216,
+            "threshold": 0.5248046875000002
         },
         "standard": {
-            "score": 8.831920073162518,
-            "threshold": 0.654687309265137
+            "score": -20.9943419637355,
+            "threshold": 0.42423095703125
         }
     },
     "bayesChangePt": {
